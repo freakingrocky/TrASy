@@ -5,18 +5,29 @@ from SECRETS import API_KEY
 
 class PyTracyDataFetcher:
 
-    def __init__(self, url: str, payload: dict|None = None, headers: dict|None = None, req_auth: bool = False, param_info: dict|None = None):
+    def __init__(self, url: str, payload: dict = {}, headers: dict = {}, req_auth: bool = False, param_info: dict|None = None):
+        # Type Checking to ensure no silent errors
+        NoneType = type(None)
+        isinstance(url, str), "url should be of type str"
+        isinstance(payload, dict), "payload should be of type dict"
+        isinstance(headers, dict), "headers should be of type dict"
+        isinstance(req_auth, bool), "req_auth should be of type bool"
+        isinstance(param_info, (NoneType, dict)), "param_info should be of type dict or must be None"
+
+
         self.base_url = url
-        self.payload = payload if payload else {}
-        self.headers = headers if headers else {}
+        self.payload = payload
+        self.headers = headers
         self.req_auth = req_auth
         self.auth = ''
         self.param_info = param_info
         if self.param_info:
+            # Type Checking param_info to ensure no silent errors
             for k in self.param_info.keys():
                 assert isinstance(self.param_info[k]['type'], type), f"{k} should be of type {self.param_info[k]['type']}"
                 assert isinstance(self.param_info[k]['format'], (str)), f"{k} should be of format {self.param_info[k]['format']}"
 
+        # If the API requires authentication, then the API key should be in the URL or assumed to be in the headers.
         if req_auth:
             if 'auth' in url or 'token' in url:
                 self.base_url = self.base_url.replace(":auth", API_KEY)

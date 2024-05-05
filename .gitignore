@@ -1,1 +1,2 @@
-./PyTracy/SECRETS.*
+PyTracy/SECRETS.*
+__pycache__
