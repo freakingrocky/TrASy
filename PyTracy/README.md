@@ -60,3 +60,6 @@ asyncio.run(main())
 ```
 
 This ensures that TraSy does not freeze when loading data.
+
+## Using C Process
+The process must be named func in your C code and must only have one function in the entire file.
