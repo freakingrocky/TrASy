@@ -2,3 +2,7 @@ requests
 influxdb-client
 numpy
 polars
+influxdb-client[ciso]
+influxdb-client[async]
+influxdb-client[extras]
+asyncio

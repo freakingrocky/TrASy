@@ -1,38 +1,66 @@
 import polars as pol
 import numpy as np
-from SECRETS import INFLUXDB_TOKEN
+from SECRETS import INFLUXDB_TOKEN, INFLUX_ORG, INFLUX_URL
+from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
+from copy import copy
+import asyncio
 
 
 class DataContainer:
 
-    def __init__(self): # todo: use influxdb instead of polars
-        assert 'symbol' in schema.keys(), 'symbol is required for a DataContainer'
-        assert isinstance(schema, dict), 'schema must be a dict'
+    def __init__(self, name: str): #
+        assert isinstance(name, str), "name must be a string"
 
         self.pipeline = []
         self.load_pipeline = []
-        self.influx_db_connection = None
+        self.influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUXDB_TOKEN, org=INFLUX_ORG)
+        self.influx_buckets_api = self.influx_client.buckets_api()
 
-    def load_source(self, data_source, loading_pipeline: function|None = None, preserve_load_pipeline: bool = False):
+        new_bucket = self.influx_client.domain.bucket.Bucket(
+            name=name,
+            retention_rules=[],
+            org_id=INFLUX_ORG
+        )
+        created_bucket = self.influx_buckets_api.create_bucket(new_bucket)
+        self.bucket_id = created_bucket.id  # Retrieve bucket ID
+        assert self.bucket_id, "Error with InfluxDB API, Try Running the test_influxDB.py script to debug"
+
+
+    async def load_source(self, data_source, loading_pipeline: function|None = None, preserve_load_pipeline: bool = False, unique_load_pipeline: bool = False):
         assert self.load_pipeline, 'A Loading Pipeline must be provided'
         assert data_source, 'Data Source must not be empty'
+        assert not (preserve_load_pipeline and unique_load_pipeline), "A unique pipeline cannot be preserved and unique at the same time"
 
+        load_pipeline = copy(self.load_pipeline)
         if preserve_load_pipeline:
-            if self.load_pipeline:
-                OVERRIDE = input('A Loading Pipeline Exists Already. Override? [Y/N]')
-                while OVERRIDE not in ['Y', 'N']:
-                    OVERRIDE = input('Input not recognized. Please input Y and press enter for Yes, and N for No.')
+            self.load_pipeline.append(loading_pipeline)
 
-                if OVERRIDE.capitalize() == 'Y':
-                    self.load_pipeline = [loading_pipeline]
+        if unique_load_pipeline:
+            load_pipeline = [loading_pipeline]
 
-        if loading_pipeline and not OVERRIDE:
-            self.time_data
+        for process in load_pipeline:
+            data_source = process(data_source)
 
-        pass
+        async with InfluxDBClientAsync(
+            url=INFLUX_URL, token=INFLUXDB_TOKEN, org=INFLUX_ORG
+        ) as client:
+            await client.write_api().write(bucket=self.bucket_id, record=data_source)
+
+
+    async def get_polars(self, query: str):
+        async with InfluxDBClientAsync(
+            url=INFLUX_URL, token=INFLUXDB_TOKEN, org=INFLUX_ORG
+        ) as client:
+            query_api = client.query_api()
+            result = await query_api.query_data_frame(org=INFLUX_ORG, query=query)
+            polars_data = pol.from_pandas(result)
+
+        return polars_data
+
 
     def add_process(self, func: function):
-        pass
+        self.load_pipeline.append(func)
 
     def add_c_process(self, c_func):
         pass
@@ -40,5 +68,6 @@ class DataContainer:
     def add_java_process(self, j_func):
         pass
 
-    def visualize(self, indicator: list):
+    def visualize(self, indicators: list):
+        asyncio.run(self.get_polars(indicators)) # TODO
         pass
