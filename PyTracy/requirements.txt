@@ -1,3 +1,4 @@
 requests
-pandas
+influxdb-client
 numpy
+polars
