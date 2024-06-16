@@ -1,5 +1,6 @@
 import polars as pol
-from .SECRETS import INFLUXDB_TOKEN, INFLUX_ORG, INFLUX_URL
+from SECRETS import INFLUXDB_TOKEN, INFLUX_ORG, INFLUX_URL
+from CONSTANTS import CFUNC, JAVAFUNC
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
 from copy import copy
@@ -94,14 +95,18 @@ class DataContainer:
         c_func = ctypes.CDLL('./c_funcs/' + os.path.basename(c_func))
         c_func.func.argtypes = c_types[:-1]
         c_func.func.restype = c_types[-1]
-        self.load_pipeline.append((c_func, 1))
+        self.load_pipeline.append((c_func, CFUNC))
 
     def add_java_process(self, j_func):
-        self.load_pipeline.append((j_func, 2))
+        self.load_pipeline.append((j_func, JAVAFUNC))
 
     def destroy(self) -> None:
         self.influx_buckets_api.delete_bucket(self.bucket_id)
 
     def visualize(self, indicators: list):
         pol_df = asyncio.run(self.get_polars(indicators)) # TODO
+        pass
+
+    def process_exist_data(self):
+        # TODO: Process whatever is already loaded
         pass

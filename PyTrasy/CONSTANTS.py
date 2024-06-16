@@ -1,0 +1,2 @@
+CFUNC = 1
+JAVAFUNC = 2
