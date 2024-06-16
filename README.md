@@ -1,12 +1,12 @@
-# Tracy
-Trading System for Retail Users, built with Python, kdb+/polars, C++, Java
+# TrASy - Trading Automation System
+Trading Autiomation System for Retail Users, built with Python, InfluxDB, C++, Java
 
 ## Highlights
-- Tracy uses Python for the end-user, resulting in a low barrier for entry into automating strategies
-- Tracy is extensible using Python/C++/Java and can be connected to virtually broker
-- Tracy uses influxdb for data processing, great for time series data *(unless you have 100,000$ a year for kdb+)*
-- Tracy uses a mix of C++ and Java for forward testing and live trades, resulting in low processing latency
-- Tracy uses Django and Python for backtesting, resulting in an easy coding and prototyping experience with nice visualizations
+- TraSy uses Python for the end-user, resulting in a low barrier for entry into automating strategies
+- TraSy is extensible using Python/C++/Java and can be connected to virtually broker
+- TraSy uses influxdb for data processing, great for time series data *(unless you have 100,000$ a year for kdb+)*
+- TraSy uses a mix of C++ and Java for forward testing and live trades, resulting in low processing latency
+- TraSy uses Django and Python for backtesting, resulting in an easy coding and prototyping experience with nice visualizations
 
 ## Current Status
 

@@ -1,2 +1,5 @@
-PyTracy/SECRETS.*
+PyTrasy/SECRETS.*
 __pycache__
+*.ipynb
+DATA
+*.ipynb
