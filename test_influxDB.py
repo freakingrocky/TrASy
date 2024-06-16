@@ -5,7 +5,7 @@ import polars as pol
 import datetime as dt
 
 # Secrets and connection parameters
-from PyTracy.SECRETS import INFLUXDB_TOKEN, INFLUX_ORG, INFLUX_URL
+from PyTrasy.SECRETS import INFLUXDB_TOKEN, INFLUX_ORG, INFLUX_URL
 
 # Ignore Known Warnings from InfluxDB Client
 import warnings

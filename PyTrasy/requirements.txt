@@ -6,3 +6,4 @@ influxdb-client[ciso]
 influxdb-client[async]
 influxdb-client[extras]
 asyncio
+lightweight-charts  # optional, defauly yes. Allows visualization directly from Python

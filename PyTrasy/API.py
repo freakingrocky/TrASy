@@ -3,7 +3,7 @@ import re
 from SECRETS import API_KEY
 
 
-class PyTracyDataFetcher:
+class PyTraSyDataFetcher:
 
     def __init__(self, url: str, payload: dict = {}, headers: dict = {}, req_auth: bool = False, param_info: dict|None = None):
         # Type Checking to ensure no silent errors
@@ -65,6 +65,6 @@ if __name__ == '__main__':
     'Accept': 'application/json'
     }
     param_info = {'instrument_key': {'type': str, 'format': r'.*'}, 'interval': {'type': str, 'format': r'1minute|30minute|day|week|month}'}, 'to_date': {'type': str, 'format': r'\d{4}-\d{2}-\d{2}'}, 'from_date': {'type': str, 'format': r'\d{4}-\d{2}-\d{2}'}}
-    fetcher = PyTracyDataFetcher('https://api.upstox.com/v2/historical-candle/:instrument_key/:interval/:to_date/:from_date', headers=headers, param_info=param_info)
+    fetcher = PyTraSyDataFetcher('https://api.upstox.com/v2/historical-candle/:instrument_key/:interval/:to_date/:from_date', headers=headers, param_info=param_info)
     print(fetcher.fetch({'instrument_key': 'NSE_INDEX%7CNifty%2050', 'interval': '1minute', 'to_date': '2023-12-31', 'from_date': '2023-12-29'}))
     print(fetcher)

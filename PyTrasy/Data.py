@@ -3,6 +3,7 @@ from SECRETS import INFLUXDB_TOKEN, INFLUX_ORG, INFLUX_URL
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
 from copy import copy
+from lightweight_charts import Chart
 import asyncio
 import ctypes
 import os
@@ -89,5 +90,7 @@ class DataContainer:
         self.influx_buckets_api.delete_bucket(self.bucket_id)
 
     def visualize(self, indicators: list):
-        asyncio.run(self.get_polars(indicators)) # TODO
+        pol_df = asyncio.run(self.get_polars(indicators)) # TODO
+        chart = Chart()
+        chart.set(pol_df)
         pass
