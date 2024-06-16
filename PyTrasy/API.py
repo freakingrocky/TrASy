@@ -1,6 +1,6 @@
 import requests as req
 import re
-from SECRETS import API_KEY
+from .SECRETS import API_KEY
 
 
 class PyTraSyDataFetcher:

@@ -1,35 +1,48 @@
 import polars as pol
-from SECRETS import INFLUXDB_TOKEN, INFLUX_ORG, INFLUX_URL
+from .SECRETS import INFLUXDB_TOKEN, INFLUX_ORG, INFLUX_URL
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.influxdb_client_async import InfluxDBClientAsync
 from copy import copy
-from lightweight_charts import Chart
 import asyncio
 import ctypes
 import os
 import platform
 
+from typing import Callable
+
 
 class DataContainer:
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, retention_rules: list = []) -> None:
         assert isinstance(name, str), "name must be a string"
 
         self.load_pipeline = []
         self.influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUXDB_TOKEN, org=INFLUX_ORG)
         self.influx_buckets_api = self.influx_client.buckets_api()
 
-        new_bucket = self.influx_client.domain.bucket.Bucket(
-            name=name,
-            retention_rules=[],
-            org_id=INFLUX_ORG
-        )
-        created_bucket = self.influx_buckets_api.create_bucket(new_bucket)
-        self.bucket_id = created_bucket.id  # Retrieve bucket ID
+        # Check if the bucket with the given name exists
+        existing_buckets = self.influx_buckets_api.find_buckets().buckets
+        existing_bucket = next((b for b in existing_buckets if b.name == name), None)
+
+        if existing_bucket:
+            self.bucket_id = existing_bucket.id
+        else:
+            # Create a new bucket
+            created_bucket = self.influx_buckets_api.create_bucket(bucket_name=name, retention_rules=retention_rules, org_id=INFLUX_ORG)
+            self.bucket_id = created_bucket.id  # Retrieve bucket ID
+
         assert self.bucket_id, "Error with InfluxDB API, Try Running the test_influxDB.py script to debug"
 
+    async def load_with_func(self, loading_func: Callable, *args) -> None:
+        """Warning: Mainly meant for Backtesting only."""
+        assert isinstance(loading_func, Callable), "loading_pipeline must be a function"
 
-    async def load_source(self, data_source, loading_pipeline: function|None = None, preserve_load_pipeline: bool = False, unique_load_pipeline: bool = False) -> None:
+        async with InfluxDBClientAsync(
+            url=INFLUX_URL, token=INFLUXDB_TOKEN, org=INFLUX_ORG
+        ) as client:
+            await client.write_api().write(bucket=self.bucket_id, record=loading_func(args))
+
+    async def load_source(self, data_source, loading_pipeline: Callable|None = None, preserve_load_pipeline: bool = False, unique_load_pipeline: bool = False) -> None:
         assert self.load_pipeline, 'A Loading Pipeline must be provided'
         assert not (preserve_load_pipeline and unique_load_pipeline), "A unique pipeline cannot be preserved and unique at the same time"
 
@@ -56,7 +69,7 @@ class DataContainer:
             await client.write_api().write(bucket=self.bucket_id, record=data_source)
 
 
-    async def get_polars(self, query: str) -> pol.DataFrame:
+    async def get_polars(self, query: str, base_time_frame: str, target_time_frame: str) -> pol.DataFrame:
         """Warning: Mainly meant for Backtesting only."""
         assert isinstance(query, str), "Query must be a string containing valid flux code."
 
@@ -70,14 +83,14 @@ class DataContainer:
         return polars_data
 
 
-    def add_process(self, func: function) -> None:
+    def add_process(self, func: Callable) -> None:
         self.load_pipeline.append((func, 0))
 
     def add_c_process(self, c_func: str, c_types: list, comp_options: str = None) -> None:
         assert isinstance(c_types, list), "c_types must be a list containing the types of the arguments and return of the C function"
         assert isinstance(c_func, str), "c_func must be a string containing the path to the C file uncompiled"
 
-        os.execute(f"gcc -shared -o {os.path.join(os.cwd(), "c_funcs", os.path.basename(c_func))}{' ' + comp_options + ' ' if comp_options else ''}{' -fPIC' if platform.system.lower() != 'windows' else ''} {c_func}")
+        os.execute(f"gcc -shared -o {os.path.join(os.cwd(), 'c_funcs', os.path.basename(c_func))}{' ' + comp_options + ' ' if comp_options else ''}{' -fPIC' if platform.system.lower() != 'windows' else ''} {c_func}")
         c_func = ctypes.CDLL('./c_funcs/' + os.path.basename(c_func))
         c_func.func.argtypes = c_types[:-1]
         c_func.func.restype = c_types[-1]
@@ -91,6 +104,4 @@ class DataContainer:
 
     def visualize(self, indicators: list):
         pol_df = asyncio.run(self.get_polars(indicators)) # TODO
-        chart = Chart()
-        chart.set(pol_df)
         pass
