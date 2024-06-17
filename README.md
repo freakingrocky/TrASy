@@ -3,10 +3,11 @@ Trading Autiomation System for Retail Users, built with Python, InfluxDB, C++, J
 
 ## Highlights
 - TraSy uses Python for the end-user, resulting in a low barrier for entry into automating strategies
-- TraSy is extensible using Python/C++/Java and can be connected to virtually broker
+- TraSy is extensible using Python/C++/Java and can be connected to brokers such as Zerodha to automatically trade 
 - TraSy uses influxdb for data processing, great for time series data *(unless you have 100,000$ a year for kdb+)*
 - TraSy uses a mix of C++ and Java for forward testing and live trades, resulting in low processing latency
-- TraSy uses Django and Python for backtesting, resulting in an easy coding and prototyping experience with nice visualizations
+- TraSy uses Python for backtesting, resulting in an easy coding and prototyping experience
+- TraSy features a react based front end for easy visualization and results
 
 ## Current Status
 
