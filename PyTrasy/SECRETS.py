@@ -1,0 +1,4 @@
+API_KEY = 'NA'
+INFLUXDB_TOKEN = 'HhIVZf53DY2sXIfUKiRwy81L-FMEBp3Bvl7COw-TuauzFNbQG8OPvvQfWfd-26JcmwLpiZ681mZXX3YbYMNQxg=='
+INFLUX_ORG = "freakingrocky"
+INFLUX_URL = "http://localhost:8086"
