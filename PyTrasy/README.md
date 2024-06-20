@@ -1,5 +1,5 @@
-# PyTracy
-PyTracy is the Pythonic Component of Tracy. It is used for:
+# PyTrasy
+PyTrasy is the Pythonic Component of Trasy. It is used for:
 - API Calls *(reccomended for backtesting only)*
 - Data Loading *(reccomended for backtesting only)*
 - Strategy Building *(reccomended for prototyping only)*
@@ -63,3 +63,5 @@ This ensures that TraSy does not freeze when loading data.
 
 ## Using C Process
 The process must be named func in your C code and must only have one function in the entire file.
+
+In theory, it is also possible to use C++ functions with PyTrASy but native support is not provided at the moment, although it will be explored in the future. The recommended method for this would be to provide a C interface to the C++ codebase, for which many online tutorials are available. 
