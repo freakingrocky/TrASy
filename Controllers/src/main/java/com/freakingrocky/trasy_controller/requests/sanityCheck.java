@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/sanity")
-public class SanityCheck {
+public class sanityCheck {
 
     @GetMapping("/greet")
     public String greet() {
