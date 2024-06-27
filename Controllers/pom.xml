@@ -56,6 +56,15 @@
 			<artifactId>reactive-streams</artifactId>
 			<version>1.0.3</version>
 		</dependency>
+
+		<!-- Jakarta Validation -->
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<version>6.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
