@@ -1,7 +1,6 @@
 package com.freakingrocky.trasy_controller.requests.influxDB;
 
-public interface influxWriter {
-    void writeData(String measurement, String fieldKey, double fieldValue, String tagKey, String tagValue) throws Exception;
-    void setInfluxBucket(String bucket);
+public interface InfluxWriter {
+    void writeData(String measurement, String fieldKey, double fieldValue, String tagKey, String tagValue, String bucket) throws Exception;
     void close();
 }
