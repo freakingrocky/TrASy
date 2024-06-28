@@ -31,13 +31,32 @@ public class requestsController {
     @GetMapping("/exec_query")
     public Flux<String> getData(@RequestBody @Valid Map<String, Object> queryRequest) throws Exception {
         String query = (String) queryRequest.get("query");
-        String bucket = (String) queryRequest.get("bucket");
 
-        return influxLoader.queryData(query, bucket)
+        return influxLoader.queryData(query)
             .doOnNext(data -> log.info("Received data: {}", data))
             .doOnError(error -> log.error("Error occurred: {}", error.getMessage()))
             .doOnComplete(() -> log.info("Query completed"));
     }
+
+    @GetMapping("/exec_query/candle")
+    public Flux<Map<String, Object>> getCandleData(@RequestBody @Valid Map<String, Object> queryRequest) throws Exception {
+        String query = (String) queryRequest.get("query");
+
+            return influxLoader.queryCandleData(query)
+                .doOnNext(data -> log.info("Received data: {}", data))
+                .doOnError(error -> log.error("Error occurred: {}", error.getMessage()))
+                .doOnComplete(() -> log.info("Query completed"));
+        }
+
+    @GetMapping("/query")
+    public Flux<Map<String, Object>> getJSONData(@RequestBody @Valid Map<String, Object> queryRequest) throws Exception {
+        String query = (String) queryRequest.get("query");
+
+            return influxLoader.queryDataJSON(query)
+                .doOnNext(data -> log.info("Received data: {}", data))
+                .doOnError(error -> log.error("Error occurred: {}", error.getMessage()))
+                .doOnComplete(() -> log.info("Query completed"));
+        }
 
     @PostMapping(value = "/write_data", consumes = MediaType.APPLICATION_JSON_VALUE)
     public String submitData(@RequestBody @Valid Map<String, Object> requestData) throws Exception {
