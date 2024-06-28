@@ -1,7 +1,7 @@
 package com.freakingrocky.trasy_controller.requests.influxDB;
 
-import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
 
 public interface InfluxLoader {
-    Publisher<String> queryData(String query, String bucket);
+    Flux<String> queryData(String query, String bucket);
 }

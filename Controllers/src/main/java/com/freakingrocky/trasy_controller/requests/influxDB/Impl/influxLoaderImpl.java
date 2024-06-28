@@ -1,10 +1,7 @@
 package com.freakingrocky.trasy_controller.requests.influxDB.Impl;
 
-import java.util.concurrent.Flow;
-import java.util.concurrent.SubmissionPublisher;
-
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscription;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.freakingrocky.trasy_controller.requests.influxDB.InfluxLoader;
 import com.freakingrocky.trasy_controller.util.ConfigLoader;
@@ -12,75 +9,40 @@ import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.client.QueryApi;
 
+import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
+
+@Slf4j
+@Service
 public class InfluxLoaderImpl implements InfluxLoader {
 
-    private String token;
-    private String org;
-    private String bucket;
-    private InfluxDBClient client;
+    private final InfluxDBClient client;
 
-    public InfluxLoaderImpl() {
-        // Load configuration
-        ConfigLoader configLoader = new ConfigLoader("config.properties");
+    @Autowired
+    public InfluxLoaderImpl(ConfigLoader configLoader) {
         String url = configLoader.getProperty("influxdb.url");
-        this.token = configLoader.getProperty("influxdb.token");
-        this.org = configLoader.getProperty("influxdb.org");
-        this.client = InfluxDBClientFactory.create(url, token.toCharArray());
-    }
-
-    public void setInfluxBucket(String bucket) {
-        this.bucket = bucket;
+        String token = configLoader.getProperty("influxdb.token");
+        String org = configLoader.getProperty("influxdb.org");
+        this.client = InfluxDBClientFactory.create(url, token.toCharArray(), org);
     }
 
     @Override
-    public Publisher<String> queryData(String query, String bucket) {
-        this.setInfluxBucket(bucket);
-        SubmissionPublisher<String> publisher = new SubmissionPublisher<>();
+    public Flux<String> queryData(String query, String bucket) {
         QueryApi queryApi = client.getQueryApi();
 
-        queryApi.query(query, org,
-            (cancellable, record) -> {
-                String recordData = record.getTime() + ": " + record.getValueByKey("_value");
-                publisher.submit(recordData);
-            },
-            throwable -> {
-                publisher.closeExceptionally(throwable);
-            },
-            () -> {
-                publisher.close();
-            }
-        );
+        return Flux.create(sink -> {
+            queryApi.query(query, (cancellable, record) -> {
+                log.debug("Received record: {}", record);
+                String value = String.valueOf(record.getValue());
+                String time = String.valueOf(record.getTime());
 
-        return subscriber -> publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscriber.onSubscribe(new Subscription() {
-                    @Override
-                    public void request(long n) {
-                        subscription.request(n);
-                    }
-
-                    @Override
-                    public void cancel() {
-                        subscription.cancel();
-                    }
-                });
-            }
-
-            @Override
-            public void onNext(String item) {
-                subscriber.onNext(item);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                subscriber.onError(throwable);
-            }
-
-            @Override
-            public void onComplete() {
-                subscriber.onComplete();
-            }
+                if (value != null) {
+                    String result = time + ": " + value;
+                    sink.next(result);
+                }
+            }, throwable -> {
+                sink.error(throwable);
+            }, sink::complete);
         });
     }
 
