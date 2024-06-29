@@ -1,8 +1,11 @@
 import axios from "axios";
-import { createChart } from "lightweight-charts";
-import React, { useEffect, useRef, useState } from "react";
+import HighchartsReact from "highcharts-react-official";
+import Highcharts from "highcharts/highstock";
+import React, { useEffect, useState } from "react";
 import "./Data.scss"; // Assuming you will create this CSS file for styling
 
+// TODO: Fix the Symbols Loading System (too slow and inefficient)
+// TODO: Use a reactive query for JAVA fetching
 const Data = () => {
   const [data, setData] = useState([]);
   const [symbols, setSymbols] = useState([]);
@@ -11,12 +14,6 @@ const Data = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
-  const chartContainerRef = useRef(null);
-  const chart = useRef(null);
-  const candlestickSeries = useRef(null);
-  const volumeSeries = useRef(null);
-  const upperBandSeries = useRef(null);
-  const lowerBandSeries = useRef(null);
 
   useEffect(() => {
     fetchSymbols();
@@ -36,22 +33,6 @@ const Data = () => {
       fetchData(page, selectedSymbol);
     }
   }, [page, selectedSymbol]);
-
-  useEffect(() => {
-    if (
-      chart.current &&
-      candlestickSeries.current &&
-      volumeSeries.current &&
-      upperBandSeries.current &&
-      lowerBandSeries.current
-    ) {
-      const chartData = processChartData(data);
-      candlestickSeries.current.setData(chartData.candlesticks);
-      volumeSeries.current.setData(chartData.volume);
-      upperBandSeries.current.setData(chartData.upperBand);
-      lowerBandSeries.current.setData(chartData.lowerBand);
-    }
-  }, [data]);
 
   const fetchSymbols = async () => {
     try {
@@ -98,7 +79,7 @@ const Data = () => {
   const processChartData = (data) => {
     const processedData = data
       .map((item) => ({
-        time: new Date(item._time).getTime() / 1000,
+        time: new Date(item._time).getTime(),
         open: item.Open,
         high: item.High,
         low: item.Low,
@@ -107,18 +88,15 @@ const Data = () => {
       }))
       .sort((a, b) => a.time - b.time); // Sort by time in ascending order
 
-    const candlesticks = processedData.map((item) => ({
-      time: item.time,
-      open: item.open,
-      high: item.high,
-      low: item.low,
-      close: item.close,
-    }));
+    const candlesticks = processedData.map((item) => [
+      item.time,
+      item.open,
+      item.high,
+      item.low,
+      item.close,
+    ]);
 
-    const volume = processedData.map((item) => ({
-      time: item.time,
-      value: item.volume,
-    }));
+    const volume = processedData.map((item) => [item.time, item.volume]);
 
     const { upperBand, lowerBand } = calculateBollingerBands(processedData);
 
@@ -135,13 +113,8 @@ const Data = () => {
   const calculateBollingerBands = (data) => {
     const period = 20;
     const multiplier = 2;
-    const movingAverage = (values) =>
-      values.reduce((sum, value) => sum + value, 0) / values.length;
-    const standardDeviation = (values, mean) =>
-      Math.sqrt(
-        values.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
-          values.length
-      );
+    const movingAverage = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
+    const standardDeviation = (values, mean) => Math.sqrt(values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length);
 
     const upperBand = [];
     const lowerBand = [];
@@ -153,8 +126,8 @@ const Data = () => {
         const mean = movingAverage(closes);
         const sd = standardDeviation(closes, mean);
 
-        upperBand.push({ time: data[i].time, value: mean + multiplier * sd });
-        lowerBand.push({ time: data[i].time, value: mean - multiplier * sd });
+        upperBand.push([data[i].time, mean + multiplier * sd]);
+        lowerBand.push([data[i].time, mean - multiplier * sd]);
       }
     }
 
@@ -176,55 +149,80 @@ const Data = () => {
 
   const handleSelectSymbol = (symbol) => {
     setSelectedSymbol(symbol);
-    if (chart.current) {
-      chart.current.remove();
-      chart.current = null;
-    }
-    createChartInstance();
   };
 
-  const createChartInstance = () => {
-    if (chartContainerRef.current) {
-      chart.current = createChart(chartContainerRef.current, {
-        width: chartContainerRef.current.clientWidth,
-        height: 500,
-      });
-      candlestickSeries.current = chart.current.addCandlestickSeries();
-      volumeSeries.current = chart.current.addHistogramSeries({
-        priceFormat: { type: "volume" },
-        priceLineVisible: false,
-        color: "#26a69a",
-      });
-      upperBandSeries.current = chart.current.addLineSeries({
-        color: "rgba(255, 99, 132, 0.5)",
-        lineWidth: 1,
-      });
-      lowerBandSeries.current = chart.current.addLineSeries({
-        color: "rgba(255, 99, 132, 0.5)",
-        lineWidth: 1,
-      });
-      chart.current.resize(window.innerWidth * 0.9, 500);
-      const chartData = processChartData(data);
-      candlestickSeries.current.setData(chartData.candlesticks);
-      volumeSeries.current.setData(chartData.volume);
-      upperBandSeries.current.setData(chartData.upperBand);
-      lowerBandSeries.current.setData(chartData.lowerBand);
-
-      // Add drawing tools
-      const tool = chart.current.addLineSeries({
-        color: "#ff0000",
+  const chartOptions = {
+    title: {
+      text: `Stock Price for ${selectedSymbol}`,
+    },
+    rangeSelector: {
+      selected: 1,
+    },
+    yAxis: [
+      {
+        labels: {
+          align: 'right',
+          x: -3,
+        },
+        title: {
+          text: 'Price',
+        },
+        height: '60%',
         lineWidth: 2,
-      });
-
-      chart.current.subscribeClick((param) => {
-        if (param.point) {
-          tool.update({
-            time: param.time,
-            value: param.point.price,
-          });
-        }
-      });
-    }
+        resize: {
+          enabled: true,
+        },
+      },
+      {
+        labels: {
+          align: 'right',
+          x: -3,
+        },
+        title: {
+          text: 'Volume',
+        },
+        top: '80%',
+        height: '20%',
+        offset: 0,
+        lineWidth: 2,
+      },
+    ],
+    tooltip: {
+      split: true,
+    },
+    series: [
+      {
+        type: 'candlestick',
+        name: selectedSymbol,
+        data: processChartData(data).candlesticks,
+      },
+      {
+        type: 'column',
+        name: 'Volume',
+        data: processChartData(data).volume,
+        yAxis: 1,
+      },
+      {
+        type: 'line',
+        name: 'Upper Bollinger Band',
+        data: processChartData(data).upperBand,
+        color: 'rgba(255, 99, 132, 0.5)',
+        lineWidth: 1,
+        tooltip: {
+          valueDecimals: 2,
+        },
+      },
+      {
+        type: 'line',
+        name: 'Lower Bollinger Band',
+        data: processChartData(data).lowerBand,
+        color: 'rgba(255, 99, 132, 0.5)',
+        lineWidth: 1,
+        tooltip: {
+          valueDecimals: 2,
+        },
+      },
+    ],
   };
 
   return (
@@ -244,7 +242,14 @@ const Data = () => {
         ))}
       </ul>
       {selectedSymbol && (
-        <div ref={chartContainerRef} className="chart-container" />
+        <div className="chart-container">
+          <HighchartsReact
+            highcharts={Highcharts}
+            constructorType={"stockChart"}
+            options={chartOptions}
+            containerProps={{ style: { height: "80vh" } }}
+          />
+        </div>
       )}
     </div>
   );
