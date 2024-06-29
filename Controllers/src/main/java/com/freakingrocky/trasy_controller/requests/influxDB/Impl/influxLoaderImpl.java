@@ -3,6 +3,7 @@ package com.freakingrocky.trasy_controller.requests.influxDB.Impl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,10 +12,13 @@ import com.freakingrocky.trasy_controller.requests.influxDB.InfluxLoader;
 import com.freakingrocky.trasy_controller.util.ConfigLoader;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
+import com.influxdb.client.InfluxDBClientOptions;
 import com.influxdb.client.QueryApi;
 
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.OkHttpClient;
 import reactor.core.publisher.Flux;
+
 
 @Slf4j
 @Service
@@ -27,7 +31,21 @@ public class InfluxLoaderImpl implements InfluxLoader {
         String url = configLoader.getProperty("influxdb.url");
         String token = configLoader.getProperty("influxdb.token");
         String org = configLoader.getProperty("influxdb.org");
-        this.client = InfluxDBClientFactory.create(url, token.toCharArray(), org);
+
+        OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder()
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS);
+
+
+        InfluxDBClientOptions options = InfluxDBClientOptions.builder()
+        .url(url)
+        .authenticateToken(token.toCharArray())
+        .org(org)
+        .okHttpClient(okHttpClientBuilder)
+        .build();
+
+        this.client = InfluxDBClientFactory.create(options);
     }
 
     @Override
@@ -94,6 +112,19 @@ public class InfluxLoaderImpl implements InfluxLoader {
                 sink.error(throwable);
             }, sink::complete);
         });
+    }
+
+    @Override
+    public Flux<Map<String, Object>> getSymbols() {
+        String query = """
+        from(bucket: "Historical Data")
+        |> range(start: 0)
+        |> keep(columns: ["FileSymbol"])
+        |> distinct(column: "FileSymbol")
+        |> group()
+        |> sort()
+                """;
+        return queryDataJSON(query);
     }
 
 

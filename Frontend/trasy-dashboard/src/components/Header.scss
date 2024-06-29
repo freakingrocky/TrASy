@@ -1,0 +1,36 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  width: 100vw;
+  box-sizing: border-box;
+  top: 0;
+  left: 0;
+  background: rgba(255, 255, 255, 0.25); /* light glassmorphism effect */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+  margin-bottom: 0.5vw;
+}
+
+nav {
+  flex: 1; /* Take the remaining space */
+  display: flex;
+  justify-content: center; /* Center the links */
+  align-items: center; /* Align the links vertically */
+}
+
+nav a {
+  margin: 0 1rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+@media (max-width: 768px) {
+  .header {
+    display: none;
+  }
+}

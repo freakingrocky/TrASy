@@ -3,3 +3,29 @@ __pycache__
 *.ipynb
 DATA
 Controllers/src/main/resources/config.properties
+
+
+# dependencies
+./frontend/trasy-dashboard/node_modules
+./frontend/trasy-dashboard/.pnp
+./frontend/trasy-dashboard/.pnp.js
+./frontend/trasy-dashboard/.gitignore
+
+# testing
+./frontend/trasy-dashboard/coverage
+
+# production
+./frontend/trasy-dashboard/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+./frontend/trasy-dashboard/npm-debug.log*
+./frontend/trasy-dashboard/yarn-debug.log*
+./frontend/trasy-dashboard/yarn-error.log*
+
+./frontend/trasy-dashboard/src/assets/fonts/*

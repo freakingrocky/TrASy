@@ -8,4 +8,5 @@ public interface InfluxLoader {
     Flux<String> queryData(String query);
     Flux<Map<String, Object>> queryCandleData(String query);
     Flux<Map<String, Object>> queryDataJSON(String query);
+    Flux<Map<String, Object>> getSymbols();
 }

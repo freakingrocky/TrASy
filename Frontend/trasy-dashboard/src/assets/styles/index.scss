@@ -1,0 +1,134 @@
+@import './variables';
+
+/* Import fonts */
+@font-face {
+  font-family: 'Anton';
+  src: url('../fonts/Anton/Anton-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Playwrite_NG_Modern';
+  src: url('../fonts/Playwrite_NG_Modern/PlaywriteNGModern-VariableFont_wght.ttf') format('truetype');
+}
+
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+body {
+  margin: 0.5vw;
+}
+
+/* Global styles */
+body.light {
+  background-color: $light-background;
+  color: $dark-color;
+}
+
+body.dark {
+  background-color: $dark-background;
+  color: $light-color;
+}
+
+/* Header styles */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  width: 99vw;
+  box-sizing: border-box;
+  top: 0;
+  left: 0;
+  background: rgba( 255, 255, 255, 0.25 );
+  // box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+  backdrop-filter: blur( 2px );
+  -webkit-backdrop-filter: blur( 2px );
+  border-radius: 10px;
+  border: 1px solid rgba( 255, 255, 255, 0.18 );  transition: transform 0.3s ease-in-out;
+  z-index: 1000;
+
+  nav a {
+    margin: 0 1rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+/* Sidebar styles */
+.sidebar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 250px;
+  background-color: inherit;
+  padding: 2rem 1rem;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+
+  &.active {
+    transform: translateX(0);
+  }
+
+  nav a {
+    margin: 1rem 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+/* Sidebar toggle button */
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+}
+
+/* Logo styles */
+.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 2rem;
+
+  &-main {
+    font-family: 'Anton', sans-serif;
+  }
+
+  &-sub {
+    font-family: 'Playwrite_NG_Modern', sans-serif;
+    font-size: 1rem;
+  }
+}
+
+/* Theme toggle button styles */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
