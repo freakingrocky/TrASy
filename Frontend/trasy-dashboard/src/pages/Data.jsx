@@ -37,9 +37,9 @@ const Data = () => {
   const fetchSymbols = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/influx/query/symbols`
+        `http://localhost:8080/sql/symbols`
       );
-      const fetchedSymbols = response.data.map((item) => item.FileSymbol);
+      const fetchedSymbols = response.data.map((item) => item.symbol);
       setSymbols(fetchedSymbols);
       setFilteredSymbols(fetchedSymbols);
       console.log("Fetched symbols:", fetchedSymbols);
