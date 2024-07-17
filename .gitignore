@@ -29,3 +29,4 @@ Controllers/src/main/resources/config.properties
 ./frontend/trasy-dashboard/yarn-error.log*
 
 ./frontend/trasy-dashboard/src/assets/fonts/*
+Controllers/.env

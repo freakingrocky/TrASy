@@ -1,0 +1,2 @@
+@echo off
+start cmd /k "cd /d Controllers && mvn install:install-file -Dfile=mssql-jdbc-12.6.3.jre11.jar -DgroupId=com.microsoft.sqlserver -DartifactId=mssql-jdbc -Dversion=12.6.3.jre11 -Dpackaging=jar"

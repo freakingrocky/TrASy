@@ -21,9 +21,20 @@ public class sqlMethodsImpl implements sqlMethods {
     @Override
     public Flux<Map<String, Object>> getSymbols() {
         return Flux.create(sink -> {
-            String url = "jdbc:jtds:sqlserver://FREAKINGROCKY/SQLEXPRESS;databaseName=INFLUX_HISTORICAL_SYMBOLS;useNTLMv2=true;domain=freakingrocky";
+            String url = "jdbc:sqlserver://FREAKINGROCKY\\SQLEXPRESS;databaseName=INFLUX_HISTORICAL_SYMBOLS;encrypt=true;trustServerCertificate=true";
+            String user = System.getenv("SQLUser");
+            String password = System.getenv("SQLPassword");
 
-            try (Connection conn = DriverManager.getConnection(url);
+            // Load the SQL Server JDBC driver
+            try {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            } catch (ClassNotFoundException e) {
+                log.error("SQL Server JDBC Driver not found", e);
+                sink.error(e);
+                return;
+            }
+
+            try (Connection conn = DriverManager.getConnection(url, user, password);
                  Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery("SELECT SYMBOL FROM HistoricalData")) {
 

@@ -23,9 +23,9 @@
     <dependencies>
         <!-- Microsoft SQL Server -->
         <dependency>
-            <groupId>net.sourceforge.jtds</groupId>
-            <artifactId>jtds</artifactId>
-            <version>1.3.1</version>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>12.6.3.jre11</version>
         </dependency>
 
         <!-- Spring Boot Starter Web -->
