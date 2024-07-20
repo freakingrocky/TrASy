@@ -1,6 +1,6 @@
 PyTrasy/SECRETS.*
 __pycache__
-*.ipynb
+**/*.ipynb
 DATA
 Controllers/src/main/resources/config.properties
 
