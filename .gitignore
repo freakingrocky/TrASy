@@ -23,6 +23,7 @@ Controllers/src/main/resources/config.properties
 .env.development.local
 .env.test.local
 .env.production.local
+**/.env
 
 ./frontend/trasy-dashboard/npm-debug.log*
 ./frontend/trasy-dashboard/yarn-debug.log*

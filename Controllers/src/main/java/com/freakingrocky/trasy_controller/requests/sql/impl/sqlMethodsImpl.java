@@ -22,8 +22,8 @@ public class sqlMethodsImpl implements sqlMethods {
     public Flux<Map<String, Object>> getSymbols() {
         return Flux.create(sink -> {
             String url = "jdbc:sqlserver://FREAKINGROCKY\\SQLEXPRESS;databaseName=INFLUX_HISTORICAL_SYMBOLS;encrypt=true;trustServerCertificate=true";
-            String user = System.getenv("SQLUser");
-            String password = System.getenv("SQLPassword");
+            String user = "sqlAccesser";
+            String password = "sqlPasswordSimple";
 
             // Load the SQL Server JDBC driver
             try {
