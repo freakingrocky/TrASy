@@ -29,11 +29,11 @@ WORKDIR /usr/src/app
 # Copy the current directory contents into the container at /usr/src/app
 COPY . .
 
-# Run make to build the application
-RUN make
+# Run make to build the application using all available cores
+RUN make -j$(nproc)
 
 # Expose port 1010 to the outside world
 EXPOSE 1010
 
 # Define the command to run the app
-CMD ["./testService"]
+CMD ["./influxDBService"]
