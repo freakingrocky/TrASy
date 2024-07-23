@@ -21,6 +21,7 @@ void registerEndpoint(const string& name, const string& req_type, const function
 }
 
 string handleRequest(const string& method, const string& endpoint, const string& body) {
+    cout << "Handling request for endpoint: " << endpoint << " with method: " << method << endl;
     auto it = endpoints.find(endpoint);
     if (it != endpoints.end() && it->second.req_type == method) {
         return it->second.handler(body);
@@ -69,21 +70,19 @@ void session(tcp::socket socket) {
             cout << "Body: " << body << endl;
         }
 
+        string response;
         if (method == "POST") {
             string endpoint = uri.substr(1); // Remove leading '/'
-            string response = handleRequest(method, endpoint, body);
-            string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + to_string(response.length()) + "\r\n\r\n" + response;
-            boost::asio::write(socket, boost::asio::buffer(http_response));
+            response = handleRequest(method, endpoint, body);
         } else if (method == "GET") {
             string endpoint = uri.substr(1); // Remove leading '/'
-            string response = handleRequest(method, endpoint, "");
-            string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + to_string(response.length()) + "\r\n\r\n" + response;
-            boost::asio::write(socket, boost::asio::buffer(http_response));
+            response = handleRequest(method, endpoint, "");
         } else {
-            string response = "Method not allowed.";
-            string http_response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Length: " + to_string(response.length()) + "\r\n\r\n" + response;
-            boost::asio::write(socket, boost::asio::buffer(http_response));
+            response = "Method not allowed.";
         }
+
+        string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + to_string(response.length()) + "\r\n\r\n" + response;
+        boost::asio::write(socket, boost::asio::buffer(http_response));
     } catch (exception& e) {
         cerr << "Exception: " << e.what() << "\n";
     }
