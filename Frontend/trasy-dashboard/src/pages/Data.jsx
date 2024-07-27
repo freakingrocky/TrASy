@@ -1,8 +1,12 @@
 import axios from "axios";
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts/highstock";
-import React, { useEffect, useState } from "react";
+import boost from "highcharts/modules/boost";
+import React, { useEffect, useMemo, useState } from "react";
 import "./Data.scss"; // Assuming you will create this CSS file for styling
+
+// Initialize the boost module
+boost(Highcharts);
 
 const Data = () => {
   const [data, setData] = useState([]);
@@ -97,38 +101,7 @@ const Data = () => {
 
     const volume = processedData.map((item) => [item.time, item.volume]);
 
-    const { upperBand, lowerBand } = calculateBollingerBands(processedData);
-
-    return { candlesticks, volume, upperBand, lowerBand };
-  };
-
-  const calculateBollingerBands = (data) => {
-    const period = 20;
-    const multiplier = 2;
-    const movingAverage = (values) =>
-      values.reduce((sum, value) => sum + value, 0) / values.length;
-    const standardDeviation = (values, mean) =>
-      Math.sqrt(
-        values.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
-          values.length
-      );
-
-    const upperBand = [];
-    const lowerBand = [];
-
-    for (let i = 0; i < data.length; i++) {
-      if (i >= period - 1) {
-        const slice = data.slice(i - period + 1, i + 1);
-        const closes = slice.map((item) => item.close);
-        const mean = movingAverage(closes);
-        const sd = standardDeviation(closes, mean);
-
-        upperBand.push([data[i].time, mean + multiplier * sd]);
-        lowerBand.push([data[i].time, mean - multiplier * sd]);
-      }
-    }
-
-    return { upperBand, lowerBand };
+    return { candlesticks, volume };
   };
 
   const handleSearch = (e) => {
@@ -148,79 +121,66 @@ const Data = () => {
     setSelectedSymbol(symbol);
   };
 
-  const chartOptions = {
-    title: {
-      text: `Stock Price for ${selectedSymbol}`,
-    },
-    rangeSelector: {
-      selected: 1,
-    },
-    yAxis: [
-      {
-        labels: {
-          align: "right",
-          x: -3,
-        },
-        title: {
-          text: "Price",
-        },
-        height: "60%",
-        lineWidth: 2,
-        resize: {
-          enabled: true,
-        },
+  const chartOptions = useMemo(
+    () => ({
+      boost: {
+        useGPUTranslations: true,
+        seriesThreshold: 1, // Boost if more than one series
       },
-      {
-        labels: {
-          align: "right",
-          x: -3,
+      title: {
+        text: `Stock Price for ${selectedSymbol}`,
+      },
+      rangeSelector: {
+        selected: 1,
+      },
+      yAxis: [
+        {
+          labels: {
+            align: "right",
+            x: -3,
+          },
+          title: {
+            text: "Price",
+          },
+          height: "60%",
+          lineWidth: 2,
+          resize: {
+            enabled: true,
+          },
         },
-        title: {
-          text: "Volume",
+        {
+          labels: {
+            align: "right",
+            x: -3,
+          },
+          title: {
+            text: "Volume",
+          },
+          top: "80%",
+          height: "20%",
+          offset: 0,
+          lineWidth: 2,
         },
-        top: "80%",
-        height: "20%",
-        offset: 0,
-        lineWidth: 2,
+      ],
+      tooltip: {
+        split: true,
       },
-    ],
-    tooltip: {
-      split: true,
-    },
-    series: [
-      {
-        type: "candlestick",
-        name: selectedSymbol,
-        data: processChartData(data).candlesticks,
-      },
-      {
-        type: "column",
-        name: "Volume",
-        data: processChartData(data).volume,
-        yAxis: 1,
-      },
-      {
-        type: "line",
-        name: "Upper Bollinger Band",
-        data: processChartData(data).upperBand,
-        color: "rgba(255, 99, 132, 0.5)",
-        lineWidth: 1,
-        tooltip: {
-          valueDecimals: 2,
+      series: [
+        {
+          type: "candlestick",
+          name: selectedSymbol,
+          data: processChartData(data).candlesticks,
         },
-      },
-      {
-        type: "line",
-        name: "Lower Bollinger Band",
-        data: processChartData(data).lowerBand,
-        color: "rgba(255, 99, 132, 0.5)",
-        lineWidth: 1,
-        tooltip: {
-          valueDecimals: 2,
+        {
+          type: "column",
+          name: "Volume",
+          data: processChartData(data).volume,
+          yAxis: 1,
         },
-      },
-    ],
-  };
+      ],
+    }),
+    [data, selectedSymbol]
+  );
 
   return (
     <div className="container">
