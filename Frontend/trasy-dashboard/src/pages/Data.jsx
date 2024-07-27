@@ -4,8 +4,6 @@ import Highcharts from "highcharts/highstock";
 import React, { useEffect, useState } from "react";
 import "./Data.scss"; // Assuming you will create this CSS file for styling
 
-// TODO: Fix the Symbols Loading System (too slow and inefficient)
-// TODO: Use a reactive query for JAVA fetching
 const Data = () => {
   const [data, setData] = useState([]);
   const [symbols, setSymbols] = useState([]);
@@ -36,10 +34,10 @@ const Data = () => {
 
   const fetchSymbols = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:8080/sql/symbols`
-      );
-      const fetchedSymbols = response.data.map((item) => item.symbol);
+      const response = await axios.post(`http://localhost:1011/sqlQuery`, {
+        query: "SELECT SYMBOL FROM HistoricalData",
+      });
+      const fetchedSymbols = response.data.map((item) => item.SYMBOL);
       setSymbols(fetchedSymbols);
       setFilteredSymbols(fetchedSymbols);
       console.log("Fetched symbols:", fetchedSymbols);
@@ -51,16 +49,15 @@ const Data = () => {
   const fetchData = async (page, symbol) => {
     try {
       const query = `from(bucket: "Historical Data")
-        |> range(start: -2y)
+        |> range(start: -3y)
         |> filter(fn: (r) => r["_measurement"] == "futures_data")
         |> filter(fn: (r) => r["FileSymbol"] == "${symbol}")
         |> filter(fn: (r) => r["_field"] == "Open" or r["_field"] == "High" or r["_field"] == "Low" or r["_field"] == "Close" or r["_field"] == "Volume")
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
         |> sort(columns: ["_time"], desc: true)`;
 
-      const response = await axios.post("http://localhost:8080/influx/query", {
-        query: query,
-        timeout: 60000, // Set timeout to 60 seconds
+      const response = await axios.post("http://localhost:1010/fluxQuery", {
+        fluxQuery: query,
       });
 
       const result = response.data;
@@ -80,11 +77,11 @@ const Data = () => {
     const processedData = data
       .map((item) => ({
         time: new Date(item._time).getTime(),
-        open: item.Open,
-        high: item.High,
-        low: item.Low,
-        close: item.Close,
-        volume: item.Volume,
+        open: parseFloat(item.Open),
+        high: parseFloat(item.High),
+        low: parseFloat(item.Low),
+        close: parseFloat(item.Close),
+        volume: parseFloat(item.Volume),
       }))
       .sort((a, b) => a.time - b.time); // Sort by time in ascending order
 
@@ -96,16 +93,11 @@ const Data = () => {
       item.close,
     ]);
 
+    console.log("Processed chart data:", processedData);
+
     const volume = processedData.map((item) => [item.time, item.volume]);
 
     const { upperBand, lowerBand } = calculateBollingerBands(processedData);
-
-    console.log("Processed chart data:", {
-      candlesticks,
-      volume,
-      upperBand,
-      lowerBand,
-    });
 
     return { candlesticks, volume, upperBand, lowerBand };
   };
@@ -113,8 +105,13 @@ const Data = () => {
   const calculateBollingerBands = (data) => {
     const period = 20;
     const multiplier = 2;
-    const movingAverage = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
-    const standardDeviation = (values, mean) => Math.sqrt(values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length);
+    const movingAverage = (values) =>
+      values.reduce((sum, value) => sum + value, 0) / values.length;
+    const standardDeviation = (values, mean) =>
+      Math.sqrt(
+        values.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
+          values.length
+      );
 
     const upperBand = [];
     const lowerBand = [];
@@ -161,13 +158,13 @@ const Data = () => {
     yAxis: [
       {
         labels: {
-          align: 'right',
+          align: "right",
           x: -3,
         },
         title: {
-          text: 'Price',
+          text: "Price",
         },
-        height: '60%',
+        height: "60%",
         lineWidth: 2,
         resize: {
           enabled: true,
@@ -175,14 +172,14 @@ const Data = () => {
       },
       {
         labels: {
-          align: 'right',
+          align: "right",
           x: -3,
         },
         title: {
-          text: 'Volume',
+          text: "Volume",
         },
-        top: '80%',
-        height: '20%',
+        top: "80%",
+        height: "20%",
         offset: 0,
         lineWidth: 2,
       },
@@ -192,31 +189,31 @@ const Data = () => {
     },
     series: [
       {
-        type: 'candlestick',
+        type: "candlestick",
         name: selectedSymbol,
         data: processChartData(data).candlesticks,
       },
       {
-        type: 'column',
-        name: 'Volume',
+        type: "column",
+        name: "Volume",
         data: processChartData(data).volume,
         yAxis: 1,
       },
       {
-        type: 'line',
-        name: 'Upper Bollinger Band',
+        type: "line",
+        name: "Upper Bollinger Band",
         data: processChartData(data).upperBand,
-        color: 'rgba(255, 99, 132, 0.5)',
+        color: "rgba(255, 99, 132, 0.5)",
         lineWidth: 1,
         tooltip: {
           valueDecimals: 2,
         },
       },
       {
-        type: 'line',
-        name: 'Lower Bollinger Band',
+        type: "line",
+        name: "Lower Bollinger Band",
         data: processChartData(data).lowerBand,
-        color: 'rgba(255, 99, 132, 0.5)',
+        color: "rgba(255, 99, 132, 0.5)",
         lineWidth: 1,
         tooltip: {
           valueDecimals: 2,

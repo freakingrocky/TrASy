@@ -1,4 +1,4 @@
-@echo off
+& minikube -p minikube docker-env | Invoke-Expression
 REM Stop the container if it is running
 docker stop influxDBService
 

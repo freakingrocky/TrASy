@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sql-db-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: sql-db
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 1010
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influx-db-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: influx-db
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 1010

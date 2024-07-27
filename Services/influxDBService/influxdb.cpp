@@ -22,6 +22,16 @@ namespace http = beast::http;
 namespace net = boost::asio;
 using tcp = net::ip::tcp;
 
+// Helper function to trim whitespace and carriage return characters
+string trim(const string& str) {
+    size_t first = str.find_first_not_of("\r\n\t ");
+    size_t last = str.find_last_not_of("\r\n\t ");
+    if (first == string::npos || last == string::npos) {
+        return "";
+    }
+    return str.substr(first, last - first + 1);
+}
+
 string csvToJson(const string& csv) {
     istringstream csvStream(csv);
     string line;
@@ -33,8 +43,7 @@ string csvToJson(const string& csv) {
         istringstream lineStream(line);
         string cell;
         while (getline(lineStream, cell, ',')) {
-            if (cell.empty()) continue;
-            headers.push_back(cell);
+            headers.push_back(trim(cell));
         }
     }
 
@@ -45,8 +54,7 @@ string csvToJson(const string& csv) {
         Json::Value jsonObject;
         for (size_t i = 0; i < headers.size(); ++i) {
             if (!getline(lineStream, cell, ',')) break;
-            if (cell.empty()) continue;
-            jsonObject[headers[i]] = cell;
+            jsonObject[headers[i]] = trim(cell);
         }
         result.append(jsonObject);
     }
@@ -56,7 +64,7 @@ string csvToJson(const string& csv) {
 }
 
 int getProcessorCount() {
-    const int processor_count = std::thread::hardware_concurrency() * 2;  // assume every modern CPU can execute 2 threads simultaneously efficiently
+    const int processor_count = thread::hardware_concurrency() * 2;  // assume every modern CPU can execute 2 threads simultaneously efficiently
     return processor_count ? processor_count : 4;  // Assume every modern CPU can execute 4 threads simultaneously efficiently
 }
 

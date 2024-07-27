@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sql-db-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sql-db
+  template:
+    metadata:
+      labels:
+        app: sql-db
+    spec:
+      containers:
+      - name: sql-db
+        image: sql-db-service
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 1010
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influx-db-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: influx-db
+  template:
+    metadata:
+      labels:
+        app: influx-db
+    spec:
+      containers:
+      - name: influx-db
+        image: influx-db-service
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 1010

@@ -31,5 +31,8 @@ COPY . .
 # Build the application
 RUN make
 
+# Expose port 1010 to the outside world
+EXPOSE 1011
+
 # Run the application
 CMD ["./sqlDBService"]

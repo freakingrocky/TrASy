@@ -81,7 +81,12 @@ void session(tcp::socket socket) {
             response = "Method not allowed.";
         }
 
-        string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + to_string(response.length()) + "\r\n\r\n" + response;
+        // Add CORS headers (temporary)
+        string http_response = "HTTP/1.1 200 OK\r\n"
+                               "Access-Control-Allow-Origin: *\r\n"
+                               "Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n"
+                               "Access-Control-Allow-Headers: Content-Type\r\n"
+                               "Content-Length: " + to_string(response.length()) + "\r\n\r\n" + response;
         boost::asio::write(socket, boost::asio::buffer(http_response));
     } catch (exception& e) {
         cerr << "Exception: " << e.what() << "\n";

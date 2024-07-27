@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: trasy-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /sqlQuery
+        pathType: Prefix
+        backend:
+          service:
+            name: sql-db-service
+            port:
+              number: 80
+      - path: /fluxQuery
+        pathType: Prefix
+        backend:
+          service:
+            name: influx-db-service
+            port:
+              number: 80
