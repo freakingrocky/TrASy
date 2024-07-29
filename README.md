@@ -10,6 +10,8 @@ Trading Autiomation System for Retail Users, built with Python, InfluxDB, C++, J
 - TraSy features a react based front end for easy visualization and results
 
 ## Current Status
+Working on indicator compilation parallelly.
+Read [Gameplan](./Services/indicatorCompiler/Gameplan.md) to learn more.
 
 ## Installation
 
