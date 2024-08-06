@@ -1,4 +1,4 @@
-# TrASy - Trading Automation System
+# TrASy - Trading Automation System **[Currently on Hold die to Worklopad]**
 Trading Autiomation System for Retail Users, built with Python, InfluxDB, C++, Java
 
 ## Highlights
